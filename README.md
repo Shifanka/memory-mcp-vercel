@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Memory MCP Server
 
-## Getting Started
+Semantic memory server for AI agents powered by Upstash Redis and Vector.
 
-First, run the development server:
+## Features
+
+- 🧠 **Persistent Memory**: Store conversations, code, preferences, and general knowledge
+- 🔍 **Semantic Search**: Find relevant memories using AI-powered similarity search
+- ⚡ **Fast Retrieval**: Redis-powered caching and indexing
+- 🎯 **Contextual Awareness**: Automatically surface relevant context for conversations
+- 📱 **iOS Compatible**: Works with Claude app on iOS via remote MCP connection
+
+## Architecture
+
+- **Upstash Redis**: Stores structured memory data with fast key-value access
+- **Upstash Vector**: Handles semantic search with 1536-dimensional embeddings
+- **OpenAI Embeddings**: Generates vector representations using text-embedding-3-small
+- **Next.js + Vercel**: Serverless deployment with edge optimization
+
+## Environment Variables
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Upstash Redis
+UPSTASH_REDIS_REST_URL=your_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_redis_token
+
+# Upstash Vector  
+UPSTASH_VECTOR_REST_URL=your_vector_url
+UPSTASH_VECTOR_REST_TOKEN=your_vector_token
+
+# OpenAI API
+OPENAI_API_KEY=your_openai_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## MCP Tools
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### `store_memory`
+Store content in persistent memory with automatic semantic indexing.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `search_memory` 
+Search memories using semantic similarity, not just keywords.
 
-## Learn More
+### `get_context`
+Retrieve contextual memory for current conversation including recent interactions and related content.
 
-To learn more about Next.js, take a look at the following resources:
+### `list_memories`
+List stored memories with filtering by type and statistics.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### `delete_memory`
+Delete specific memories by ID with ownership verification.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Claude Desktop Configuration
 
-## Deploy on Vercel
+Add to your Claude Desktop config:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{
+  "mcpServers": {
+    "memory": {
+      "transport": "sse",
+      "url": "https://your-vercel-app.vercel.app/sse"
+    }
+  }
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+1. Create Upstash Redis and Vector databases
+2. Set environment variables in Vercel
+3. Deploy to Vercel
+4. Configure Claude Desktop with the SSE endpoint
+
+## Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+Access at `http://localhost:3000`
