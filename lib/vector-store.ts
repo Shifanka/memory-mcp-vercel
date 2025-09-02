@@ -4,17 +4,26 @@ import { embeddingService } from './embeddings';
 import crypto from 'crypto';
 
 export class VectorStore {
-  private index: Index;
+  private index: Index | null = null;
+  private mockVectors: Map<string, VectorData> = new Map();
+  private mockMode: boolean;
 
   constructor() {
-    if (!process.env.UPSTASH_VECTOR_REST_URL || !process.env.UPSTASH_VECTOR_REST_TOKEN) {
-      throw new Error('Upstash Vector credentials not configured');
-    }
+    // Check if real credentials are configured
+    const hasCredentials = process.env.UPSTASH_VECTOR_REST_URL && 
+                          process.env.UPSTASH_VECTOR_REST_TOKEN &&
+                          process.env.UPSTASH_VECTOR_REST_URL !== 'your_vector_url_here';
 
-    this.index = new Index({
-      url: process.env.UPSTASH_VECTOR_REST_URL,
-      token: process.env.UPSTASH_VECTOR_REST_TOKEN,
-    });
+    this.mockMode = !hasCredentials;
+
+    if (hasCredentials) {
+      this.index = new Index({
+        url: process.env.UPSTASH_VECTOR_REST_URL!,
+        token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
+      });
+    } else {
+      console.log('Running in vector mock mode - Vector credentials not configured');
+    }
   }
 
   async storeVector(memory: Memory): Promise<void> {

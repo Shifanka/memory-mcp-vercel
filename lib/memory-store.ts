@@ -3,17 +3,26 @@ import { Memory, ContextualMemory } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 export class MemoryStore {
-  private redis: Redis;
+  private redis: Redis | null = null;
+  private mockStorage: Map<string, any> = new Map();
+  private mockMode: boolean;
 
   constructor() {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      throw new Error('Upstash Redis credentials not configured');
-    }
+    // Check if real credentials are configured
+    const hasCredentials = process.env.UPSTASH_REDIS_REST_URL && 
+                          process.env.UPSTASH_REDIS_REST_TOKEN &&
+                          process.env.UPSTASH_REDIS_REST_URL !== 'your_redis_url_here';
 
-    this.redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    this.mockMode = !hasCredentials;
+
+    if (hasCredentials) {
+      this.redis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL!,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      });
+    } else {
+      console.log('Running in mock mode - Redis credentials not configured');
+    }
   }
 
   async storeMemory(memory: Omit<Memory, 'id'>): Promise<string> {
@@ -27,8 +36,16 @@ export class MemoryStore {
       },
     };
 
-    // Store memory with multiple keys for efficient retrieval
-    const pipeline = this.redis.pipeline();
+    if (this.mockMode) {
+      // Mock implementation
+      this.mockStorage.set(`memory:${id}`, fullMemory);
+      this.mockStorage.set(`user:${memory.userId}:memories`, 
+        [...(this.mockStorage.get(`user:${memory.userId}:memories`) || []), id]);
+      return id;
+    }
+
+    // Real Redis implementation
+    const pipeline = this.redis!.pipeline();
     
     // Store the full memory object
     pipeline.hset(`memory:${id}`, fullMemory);

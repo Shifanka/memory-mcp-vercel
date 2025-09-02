@@ -1,4 +1,4 @@
-import { mcpHandler } from '@/lib/mcp-handler';
+import { mcpHandler } from '@/lib/mcp-handler-simple';
 import type { NextRequest } from 'next/server';
 
 async function handler(
