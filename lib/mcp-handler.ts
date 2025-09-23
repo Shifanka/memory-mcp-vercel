@@ -124,7 +124,7 @@ export const mcpHandler = createMcpHandler((server) => {
         const relatedSection = context.related.length > 0
           ? `\n\n**Related Memories** (${context.related.length}):\n` +
             context.related.map(r => 
-              `- [${r.memory.type}] ${(r.similarity * 100).toFixed(1)}% - ${r.memory.content.substring(0, 100)}${r.memory.content.length > 100 ? '...' : ''}`
+              `- [${r.memory.type}] ${((r.similarity || 0) * 100).toFixed(1)}% - ${r.memory.content.substring(0, 100)}${r.memory.content.length > 100 ? '...' : ''}\n`
             ).join('\n')
           : '\n\nNo related memories found.';
 
