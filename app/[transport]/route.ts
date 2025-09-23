@@ -10,7 +10,7 @@ async function handler(
   // Log request for debugging
   console.log(`MCP Request: ${req.method} /${transport}`);
   
-  return mcpHandler(req, { params: { transport } });
+  return mcpHandler(req);
 }
 
 export { handler as GET, handler as POST, handler as DELETE };
