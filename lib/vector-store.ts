@@ -78,20 +78,20 @@ export class VectorStore {
 
       return results
         .filter(result => result.score >= minScore)
-        .map(result => ({
+        .map((result: any) => ({
           memory: {
             id: String(result.id),
             userId,
-            type: result.metadata?.type as Memory['type'] || 'general',
-            content: String(result.metadata?.content || ''),
+            type: result.metadata?.type || 'general',
+            content: String(result.metadata?.content || ''),,
             metadata: {
-              timestamp: result.metadata?.timestamp || Date.now(),
-              language: result.metadata?.language as string | undefined,
+              timestamp: Number(result.metadata?.timestamp) || Date.now(),
+              language: result.metadata?.language,
               tags: result.metadata?.tags ? result.metadata.tags.split(',').filter(Boolean) : undefined,
-              title: result.metadata?.title as string | undefined,
+              title: result.metadata?.title,
             },
-            sessionId: String(result.metadata?.sessionId || '') || undefined,
-          }, as Memory, 
+            sessionId: result.metadata?.sessionId,
+          },
           score: result.score,
           similarity: result.score,
         }));
