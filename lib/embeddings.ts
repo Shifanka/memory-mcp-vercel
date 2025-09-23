@@ -52,7 +52,7 @@ export class EmbeddingService {
     if (texts.length === 0) return [];
     
     try {
-      const response = await openai.embeddings.create({
+      const response = await this.openai.embeddings.create({
         model: this.model,
         input: texts,
         dimensions: this.dimensions,
