@@ -103,7 +103,7 @@ export class VectorStore {
 
   async deleteVector(id: string): Promise<void> {
     try {
-      await this.index.delete(id);
+      await this.index!.delete(id);
     } catch (error) {
       console.error('Error deleting vector:', error);
       throw new Error(`Failed to delete vector: ${error}`);
