@@ -83,15 +83,15 @@ export class VectorStore {
             id: String(result.id),
             userId,
             type: result.metadata?.type as Memory['type'] || 'general',
-            content: result.metadata?.content || '',
+            content: String(result.metadata?.content || ''),
             metadata: {
               timestamp: result.metadata?.timestamp || Date.now(),
               language: result.metadata?.language || undefined,
               tags: result.metadata?.tags ? result.metadata.tags.split(',').filter(Boolean) : undefined,
               title: result.metadata?.title || undefined,
             },
-            sessionId: result.metadata?.sessionId as string | undefined,
-          },
+            sessionId: String(result.metadata?.sessionId || '') || undefined,
+          }, as Memory, 
           score: result.score,
           similarity: result.score,
         }));
