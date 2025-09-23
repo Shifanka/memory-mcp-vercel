@@ -5,11 +5,11 @@ import crypto from 'crypto';
 
 export class MemoryService {
   private _memoryStore: MemoryStore;
-  private vectorStore: VectorStore;
+  private _vectorStore: VectorStore;
 
   constructor() {
     this._memoryStore = new MemoryStore();
-    this.vectorStore = new VectorStore();
+    this._vectorStore = new VectorStore();
   }
 
   async storeMemory(
@@ -37,7 +37,7 @@ export class MemoryService {
     
     // Store vector representation
     const fullMemory: Memory = { ...memory, id: memoryId };
-    await this.vectorStore.storeVector(fullMemory);
+    await this._vectorStore.storeVector(fullMemory);
 
     return memoryId;
   }
@@ -63,7 +63,7 @@ export class MemoryService {
     }
 
     // Perform vector search
-    const vectorResults = await this.vectorStore.searchSimilar(query, userId, {
+    const vectorResults = await this._vectorStore.searchSimilar(query, userId, {
       limit,
       type,
       minScore,
@@ -161,7 +161,7 @@ export class MemoryService {
     // Delete from both stores
     const deleted = await this._memoryStore.deleteMemory(memoryId);
     if (deleted) {
-      await this.vectorStore.deleteVector(memoryId);
+      await this._vectorStore.deleteVector(memoryId);
     }
     return deleted;
   }
@@ -171,7 +171,7 @@ export class MemoryService {
     byType: Record<string, number>;
     recentActivity: number;
   }> {
-    const vectorStats = await this.vectorStore.getVectorStats(userId);
+    const vectorStats = await this._vectorStore.getVectorStats(userId);
     const recentMemories = await this._memoryStore.getRecentMemories(userId, 10);
     
     // Count memories from last 24 hours
@@ -193,7 +193,7 @@ export class MemoryService {
   }
 
   get vectorStore() {
-    return this.vectorStore;
+    return this._vectorStore;
   }
 
   private generateQueryHash(query: string, userId: string, options: any): string {
