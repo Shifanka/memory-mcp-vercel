@@ -3,7 +3,7 @@ import { Memory, ContextualMemory } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 export class MemoryStore {
-  private redis: Redis | null = null;
+  private redis: Redis;
   private mockStorage: Map<string, any> = new Map();
   private mockMode: boolean;
 
@@ -22,6 +22,7 @@ export class MemoryStore {
       });
     } else {
       console.log('Running in mock mode - Redis credentials not configured');
+      this.redis = {} as Redis;
     }
   }
 
@@ -45,7 +46,7 @@ export class MemoryStore {
     }
 
     // Real Redis implementation
-    const pipeline = this.redis!.pipeline();
+    const pipeline = this.redis.pipeline();
     
     // Store the full memory object
     pipeline.set(`memory:${id}`, JSON.stringify(fullMemory));
@@ -74,7 +75,7 @@ export class MemoryStore {
     return this.mockStorage.get(`memory:${id}`) || null;
   }
   
-  const memoryString = await this.redis!.get<string>(`memory:${id}`);
+  const memoryString = await this.redis.get<string>(`memory:${id}`);
   if (!memoryString) return null;
   return JSON.parse(memoryString) as Memory;
 }
