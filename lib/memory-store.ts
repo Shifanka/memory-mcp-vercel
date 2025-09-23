@@ -74,7 +74,7 @@ export class MemoryStore {
     return this.mockStorage.get(`memory:${id}`) || null;
   }
   
-  const memoryString = await this.redis!.get(`memory:${id}`);
+  const memoryString = await this.redis!.get<string>(`memory:${id}`);
   if (!memoryString) return null;
   return JSON.parse(memoryString) as Memory;
 }
