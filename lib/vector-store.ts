@@ -86,9 +86,9 @@ export class VectorStore {
             content: String(result.metadata?.content || ''),
             metadata: {
               timestamp: result.metadata?.timestamp || Date.now(),
-              language: result.metadata?.language || undefined,
+              language: result.metadata?.language as string | undefined,
               tags: result.metadata?.tags ? result.metadata.tags.split(',').filter(Boolean) : undefined,
-              title: result.metadata?.title || undefined,
+              title: result.metadata?.title as string | undefined,
             },
             sessionId: String(result.metadata?.sessionId || '') || undefined,
           }, as Memory, 
