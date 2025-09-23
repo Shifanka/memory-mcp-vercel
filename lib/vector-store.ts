@@ -80,7 +80,7 @@ export class VectorStore {
         .filter(result => result.score >= minScore)
         .map(result => ({
           memory: {
-            id: result.id,
+            id: String(result.id),
             userId,
             type: result.metadata?.type as Memory['type'] || 'general',
             content: result.metadata?.content || '',
