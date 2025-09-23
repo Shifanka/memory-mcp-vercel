@@ -2,7 +2,7 @@
 import { mcpHandler } from '@/lib/mcp-handler-simple';
 import type { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // ——— CORS helpers ———
 const CORS_HEADERS = {
