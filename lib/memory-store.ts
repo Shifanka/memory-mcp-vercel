@@ -48,7 +48,7 @@ export class MemoryStore {
     const pipeline = this.redis!.pipeline();
     
     // Store the full memory object
-    pipeline.hset(`memory:${id}`, fullMemory);
+    pipeline.hset(`memory:${id}`, JSON.stringify(fullMemory));
     
     // Add to user's memory list
     pipeline.sadd(`user:${memory.userId}:memories`, id);
