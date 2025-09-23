@@ -45,7 +45,7 @@ export class VectorStore {
         },
       };
 
-      await this.index.upsert(vectorData);
+      await this.index!.upsert(vectorData);
     } catch (error) {
       console.error('Error storing vector:', error);
       throw new Error(`Failed to store vector: ${error}`);
