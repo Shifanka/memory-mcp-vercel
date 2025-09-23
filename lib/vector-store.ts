@@ -83,7 +83,7 @@ export class VectorStore {
             id: String(result.id),
             userId,
             type: result.metadata?.type || 'general',
-            content: String(result.metadata?.content || ''),,
+            content: String(result.metadata?.content || ''),
             metadata: {
               timestamp: Number(result.metadata?.timestamp) || Date.now(),
               language: result.metadata?.language,
