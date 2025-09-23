@@ -69,7 +69,7 @@ export class VectorStore {
       
       const filter = `userId = "${userId}"` + (type ? ` AND type = "${type}"` : '');
       
-      const results = await this.index.query({
+      const results = await this.index!.query({
         vector: queryEmbedding,
         topK: limit,
         filter,
