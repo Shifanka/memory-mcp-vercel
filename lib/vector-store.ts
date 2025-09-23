@@ -127,7 +127,7 @@ export class VectorStore {
     try {
       // This is a simplified implementation since Upstash Vector doesn't have direct stats API
       // We'll get this info by querying with very low threshold
-      const allResults = await this.index.query({
+      const allResults = await this.index!.query({
         vector: new Array(embeddingService.getDimensions()).fill(0),
         topK: 1000,
         filter: `userId = "${userId}"`,
