@@ -1,8 +1,6 @@
 import { mcpHandler } from '@/lib/mcp-handler-simple';
-import type { NextRequest } from 'next/server';
 
-async function handler(req: NextRequest) {
-  console.log(`MCP HTTP Request: ${req.method} /http`);
+async function handler(req: Request) {
   return mcpHandler(req);
 }
 
