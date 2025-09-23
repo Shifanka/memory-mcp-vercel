@@ -96,7 +96,7 @@ export class MemoryStore {
   }
 
   async getRecentMemories(userId: string, limit: number = 10): Promise<Memory[]> {
-    const recentIds = await this.redis.zrevrange(`recent:${userId}`, 0, limit - 1);
+    const recentIds = await this.redis.zrange(`recent:${userId}`, 0, limit - 1);
     
     const memories: Memory[] = [];
     for (const id of recentIds) {
