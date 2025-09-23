@@ -4,11 +4,11 @@ import { Memory, SearchResult, ContextualMemory } from './types';
 import crypto from 'crypto';
 
 export class MemoryService {
-  private memoryStore: MemoryStore;
+  private _memoryStore: MemoryStore;
   private vectorStore: VectorStore;
 
   constructor() {
-    this.memoryStore = new MemoryStore();
+    this._memoryStore = new MemoryStore();
     this.vectorStore = new VectorStore();
   }
 
@@ -33,7 +33,7 @@ export class MemoryService {
     };
 
     // Store in Redis
-    const memoryId = await this.memoryStore.storeMemory(memory);
+    const memoryId = await this._memoryStore.storeMemory(memory);
     
     // Store vector representation
     const fullMemory: Memory = { ...memory, id: memoryId };
@@ -56,7 +56,7 @@ export class MemoryService {
 
     // Check semantic cache first
     const queryHash = this.generateQueryHash(query, userId, options);
-    const cachedResult = await this.memoryStore.getCachedQuery(queryHash);
+    const cachedResult = await this._memoryStore.getCachedQuery(queryHash);
     
     if (cachedResult) {
       return JSON.parse(cachedResult);
@@ -72,7 +72,7 @@ export class MemoryService {
     // Enhance with full memory data from Redis
     const enhancedResults: SearchResult[] = [];
     for (const result of vectorResults) {
-      const fullMemory = await this.memoryStore.getMemory(result.memory.id);
+      const fullMemory = await this._memoryStore.getMemory(result.memory.id);
       if (fullMemory) {
         enhancedResults.push({
           memory: fullMemory,
@@ -84,7 +84,7 @@ export class MemoryService {
 
     // Include recent memories if requested
     if (includeRecent && enhancedResults.length < limit) {
-      const recentMemories = await this.memoryStore.getRecentMemories(
+      const recentMemories = await this._memoryStore.getRecentMemories(
         userId, 
         limit - enhancedResults.length
       );
@@ -102,7 +102,7 @@ export class MemoryService {
     }
 
     // Cache the result
-    await this.memoryStore.cacheQuery(queryHash, JSON.stringify(enhancedResults), 1800); // 30 min cache
+    await this._memoryStore.cacheQuery(queryHash, JSON.stringify(enhancedResults), 1800); // 30 min cache
 
     return enhancedResults.slice(0, limit);
   }
@@ -113,7 +113,7 @@ export class MemoryService {
     sessionId?: string
   ): Promise<ContextualMemory> {
     // Get recent memories
-    const recent = await this.memoryStore.getRecentMemories(userId, 5);
+    const recent = await this._memoryStore.getRecentMemories(userId, 5);
     
     // Get semantically related memories
     const related = await this.searchMemories(userId, currentQuery, {
@@ -123,7 +123,7 @@ export class MemoryService {
 
     // Get session context if available
     const sessionMemories = sessionId 
-      ? await this.memoryStore.getSessionContext(sessionId)
+      ? await this._memoryStore.getSessionContext(sessionId)
       : [];
 
     // Merge and deduplicate
@@ -150,16 +150,16 @@ export class MemoryService {
     const { type, limit = 50, offset = 0 } = options;
 
     if (type) {
-      return this.memoryStore.getMemoriesByType(userId, type, limit);
+      return this._memoryStore.getMemoriesByType(userId, type, limit);
     }
 
-    const allMemories = await this.memoryStore.getUserMemories(userId, limit + offset);
+    const allMemories = await this._memoryStore.getUserMemories(userId, limit + offset);
     return allMemories.slice(offset, offset + limit);
   }
 
   async deleteMemory(memoryId: string): Promise<boolean> {
     // Delete from both stores
-    const deleted = await this.memoryStore.deleteMemory(memoryId);
+    const deleted = await this._memoryStore.deleteMemory(memoryId);
     if (deleted) {
       await this.vectorStore.deleteVector(memoryId);
     }
@@ -172,7 +172,7 @@ export class MemoryService {
     recentActivity: number;
   }> {
     const vectorStats = await this.vectorStore.getVectorStats(userId);
-    const recentMemories = await this.memoryStore.getRecentMemories(userId, 10);
+    const recentMemories = await this._memoryStore.getRecentMemories(userId, 10);
     
     // Count memories from last 24 hours
     const dayAgo = Date.now() - (24 * 60 * 60 * 1000);
@@ -189,7 +189,7 @@ export class MemoryService {
 
   // Expose stores for direct access in MCP tools
   get memoryStore() {
-    return this.memoryStore;
+    return this._memoryStore;
   }
 
   get vectorStore() {
