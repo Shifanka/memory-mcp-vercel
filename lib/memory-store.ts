@@ -48,7 +48,7 @@ export class MemoryStore {
     const pipeline = this.redis!.pipeline();
     
     // Store the full memory object
-    pipeline.hset(`memory:${id}`, JSON.stringify(fullMemory));
+    pipeline.set(`memory:${id}`, JSON.stringify(fullMemory));
     
     // Add to user's memory list
     pipeline.sadd(`user:${memory.userId}:memories`, id);
@@ -69,13 +69,15 @@ export class MemoryStore {
     return id;
   }
 
-  async getMemory(id: string): Promise<Memory | null> {
-    const memory = await this.redis.hgetall(`memory:${id}`);
-    if (!memory || Object.keys(memory).length === 0) {
-      return null;
-    }
-    return memory as Memory;
+ async getMemory(id: string): Promise<Memory | null> {
+  if (this.mockMode) {
+    return this.mockStorage.get(`memory:${id}`) || null;
   }
+  
+  const memoryString = await this.redis!.get(`memory:${id}`);
+  if (!memoryString) return null;
+  return JSON.parse(memoryString) as Memory;
+}
 
   async getUserMemories(userId: string, limit: number = 50): Promise<Memory[]> {
     const memoryIds = await this.redis.smembers(`user:${userId}:memories`);
