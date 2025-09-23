@@ -100,7 +100,7 @@ export class MemoryStore {
     
     const memories: Memory[] = [];
     for (const id of recentIds) {
-      const memory = await this.getMemory(id);
+      const memory = await this.getMemory(String(id));
       if (memory) memories.push(memory);
     }
     
