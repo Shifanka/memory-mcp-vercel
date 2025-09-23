@@ -78,7 +78,7 @@ export const mcpHandler = createMcpHandler((server) => {
         const formattedResults = results.map(result => 
           `**Memory ID**: ${result.memory.id}\n` +
           `**Type**: ${result.memory.type}\n` +
-          `**Similarity**: ${(result.similarity * 100).toFixed(1)}%\n` +
+          '**Similarity**: ${((result.similarity || 0) * 100).toFixed(1)}%\n' +
           `**Content**: ${result.memory.content.substring(0, 200)}${result.memory.content.length > 200 ? '...' : ''}\n` +
           `**Tags**: ${result.memory.metadata.tags?.join(', ') || 'None'}\n` +
           `**Created**: ${new Date(result.memory.metadata.timestamp).toLocaleString()}\n`
