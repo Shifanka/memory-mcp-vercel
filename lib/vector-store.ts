@@ -90,7 +90,7 @@ export class VectorStore {
               tags: result.metadata?.tags ? result.metadata.tags.split(',').filter(Boolean) : undefined,
               title: result.metadata?.title || undefined,
             },
-            sessionId: result.metadata?.sessionId || undefined,
+            sessionId: result.metadata?.sessionId as string | undefined,
           },
           score: result.score,
           similarity: result.score,
