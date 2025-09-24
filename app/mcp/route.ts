@@ -79,17 +79,25 @@ function respond(id: any, result?: any, error?: { code: number; message: string 
 
 export async function POST(req: NextRequest) {
   let msg: any;
-  try { msg = await req.json(); }
-  catch { return respond(null, undefined, { code: -32700, message: 'Parse error' }); }
+  try {
+    msg = await req.json();
+  } catch {
+    return respond(null, undefined, { code: -32700, message: 'Parse error' });
+  }
 
-  if (!msg || msg.jsonrpc !== '2.0') return respond(null, undefined, { code: -32600, message: 'Invalid Request' });
-  const id = msg.id ?? null;
-  // 🔔 Notifications (JSON-RPC bez id) – ignorujemy grzecznie (204 No Content)
-const isNotification = msg.id === undefined || msg.id === null;
-if (isNotification) {
-  // LobeChat wysyła m.in. "notifications/initialized"
-  return new NextResponse(null, { status: 204, headers: corsHeaders() });
-}
+  if (!msg || msg.jsonrpc !== '2.0') {
+    return respond(null, undefined, { code: -32600, message: 'Invalid Request' });
+  }
+
+  // 🔔 Poprawka: notification = tylko brak pola "id"
+  const hasId = Object.prototype.hasOwnProperty.call(msg, 'id');
+  if (!hasId) {
+    // np. {"jsonrpc":"2.0","method":"notifications/initialized"}
+    return new NextResponse(null, { status: 204, headers: corsHeaders() });
+  }
+
+  const id = msg.id; // null / string / number → traktujemy jako normalne żądanie
+
   try {
     switch (msg.method) {
       case 'initialize':
@@ -115,7 +123,7 @@ if (isNotification) {
         if (name === 'store_memory') {
           const text = String(args?.text || '');
           const [vec] = await embed([text]);
-          const mid = `mem_${Date.now()}`;            // 👉 realne ID, bez „mock_”
+          const mid = `mem_${Date.now()}`;
           await vecUpsert([{ id: mid, vector: vec, metadata: { text } }]);
           if (R_URL && R_TOK) {
             await redisBatch([ ['HSET', mid, 'text', text], ['RPUSH', 'mem:list', mid] ]);
@@ -142,7 +150,6 @@ if (isNotification) {
         if (name === 'delete_memory') {
           const did = String(args?.id || '');
           if (R_URL && R_TOK) await redisBatch([ ['LREM', 'mem:list', '0', did], ['DEL', did] ]);
-          // opcjonalnie: spróbuj skasować z wektora (nie zawsze dostępne)
           try {
             await fetch(`${VEC_URL}/vectors/delete`, {
               method: 'POST',
