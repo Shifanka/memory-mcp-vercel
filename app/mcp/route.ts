@@ -137,28 +137,46 @@ export async function POST(req: NextRequest) {
           return respond(id, { content: [{ type: 'text', text: JSON.stringify(out) }] });
         }
 
-        if (name === 'list_memories') {
-          if (!R_URL || !R_TOK) return respond(id, { content: [{ type: 'text', text: 'Redis off; list disabled' }] });
-          const ids: string[] = (await redisBatch([ ['LRANGE', 'mem:list', '0', '-1'] ]))?.result?.[0] || [];
-          if (!ids.length) return respond(id, { content: [{ type: 'text', text: '[]' }] });
-          const cmds = ids.map((k) => ['HGET', k, 'text']);
-          const vals = (await redisBatch(cmds))?.result || [];
-          const list = ids.map((k, i) => ({ id: k, text: vals[i] || '' }));
-          return respond(id, { content: [{ type: 'text', text: JSON.stringify(list) }] });
-        }
+if (name === 'list_memories') {
+  if (!R_URL || !R_TOK) {
+    return respond(id, { content: [{ type: 'text', text: 'Redis off; list disabled' }] });
+  }
 
-        if (name === 'delete_memory') {
-          const did = String(args?.id || '');
-          if (R_URL && R_TOK) await redisBatch([ ['LREM', 'mem:list', '0', did], ['DEL', did] ]);
-          try {
-            await fetch(`${VEC_URL}/vectors/delete`, {
-              method: 'POST',
-              headers: { Authorization: `Bearer ${VEC_TOK}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ids: [did] }),
-            });
-          } catch {}
-          return respond(id, { content: [{ type: 'text', text: JSON.stringify({ id: did, ok: true }) }] });
-        }
+  // 1) pobierz listę ID
+  const r1 = await redisBatch([ ['LRANGE', 'mem:list', '0', '-1'] ]);
+  const ids: string[] = r1?.[0]?.result || [];
+  if (ids.length === 0) {
+    return respond(id, { content: [{ type: 'text', text: '[]' }] });
+  }
+
+  // 2) pobierz tekst każdego ID (HGET id text)
+  const cmds = ids.map((k) => ['HGET', k, 'text']);
+  const r2 = await redisBatch(cmds);
+  const list = ids.map((k, i) => ({ id: k, text: r2?.[i]?.result ?? '' }));
+
+  return respond(id, { content: [{ type: 'text', text: JSON.stringify(list) }] });
+}
+
+if (name === 'delete_memory') {
+  const did = String(args?.id || '');
+  if (R_URL && R_TOK) {
+    await redisBatch([ ['LREM', 'mem:list', '0', did], ['DEL', did] ]);
+  }
+
+  try {
+    await fetch(`${VEC_URL}/vectors/delete`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${VEC_TOK}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ids: [did] }),
+    });
+  } catch {}
+
+  return respond(id, { content: [{ type: 'text', text: JSON.stringify({ id: did, ok: true }) }] });
+}
+
 
         return respond(id, undefined, { code: -32601, message: `Unknown tool ${name}` });
       }
