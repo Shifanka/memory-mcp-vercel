@@ -36,11 +36,11 @@ async function embed(texts: string[]) {
   return j.data.map((d: any) => d.embedding as number[]);
 }
 
-async function vecUpsert(items: { id: string; vector: number[]; metadata?: any }[]) {
-  const res = await fetch(`${VEC_URL}/vectors`, {
+async function vecUpsertOne(items: { id: string; vector: number[]; metadata?: any }[]) {
+  const res = await fetch(`${VEC_URL}/upsert`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${VEC_TOK}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ vectors: items }),
+    body: JSON.stringify(items),
   });
   const txt = await res.text();
   if (!res.ok) throw new Error(`Vector upsert ${res.status}: ${txt}`);
@@ -60,10 +60,10 @@ async function vecQuery(vector: number[], topK = 10) {
 
 async function redisBatch(commands: any[][]) {
   if (!R_URL || !R_TOK) return null;
-  const res = await fetch(R_URL, {
+  const res = await fetch(`${R_URL}/pipeline`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${R_TOK}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ commands }),
+    body: JSON.stringify(commands),
   });
   const txt = await res.text();
   if (!res.ok) throw new Error(`Redis ${res.status}: ${txt}`);
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
           const text = String(args?.text || '');
           const [vec] = await embed([text]);
           const mid = `mem_${Date.now()}`;
-          await vecUpsert([{ id: mid, vector: vec, metadata: { text } }]);
+          await vecUpsertOne([{ id: mid, vector: vec, metadata: { text } }]);
           if (R_URL && R_TOK) {
             await redisBatch([ ['HSET', mid, 'text', text], ['RPUSH', 'mem:list', mid] ]);
           }
