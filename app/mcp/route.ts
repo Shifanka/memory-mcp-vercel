@@ -84,7 +84,12 @@ export async function POST(req: NextRequest) {
 
   if (!msg || msg.jsonrpc !== '2.0') return respond(null, undefined, { code: -32600, message: 'Invalid Request' });
   const id = msg.id ?? null;
-
+  // 🔔 Notifications (JSON-RPC bez id) – ignorujemy grzecznie (204 No Content)
+const isNotification = msg.id === undefined || msg.id === null;
+if (isNotification) {
+  // LobeChat wysyła m.in. "notifications/initialized"
+  return new NextResponse(null, { status: 204, headers: corsHeaders() });
+}
   try {
     switch (msg.method) {
       case 'initialize':
